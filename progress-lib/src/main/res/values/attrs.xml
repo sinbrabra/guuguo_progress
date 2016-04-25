@@ -19,10 +19,17 @@
         <attr name="half_background_color" format="color"/>
         <attr name="half_progress" format="integer"/>
         <attr name="half_progress_max" format="integer"/>
-        <attr name="half_progress_startangle" format="integer"/>
-        <attr name="half_progress_endangle" format="integer"/>
         <attr name="half_center_text_size" format="dimension"/>
         <attr name="half_width" format="dimension"/>
+    </declare-styleable>
+    <declare-styleable name="MyProgressInstrument">
+        <attr name="Instrument_center_text" format="string"/>
+        <attr name="Instrument_center_text_color" format="color"/>
+        <attr name="Instrument_finished_color" format="color"/>
+        <attr name="Instrument_background_color" format="color"/>
+        <attr name="Instrument_progress" format="integer"/>
+        <attr name="Instrument_progress_max" format="integer"/>
+        <attr name="Instrument_center_text_size" format="dimension"/>
     </declare-styleable>
     <declare-styleable name="MyProgressWave">
         <attr name="wave_progress" format="float"/>

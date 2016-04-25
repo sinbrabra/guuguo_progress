@@ -222,7 +222,7 @@ public class MyProgressWave extends View {
         if(enableWave)
             return (float) (6 * Math.sin(x * 0.06 + offset) + getHeight() - h);
         else{
-            return h;
+            return  getHeight()-h;
         }
     }
 
@@ -237,10 +237,14 @@ public class MyProgressWave extends View {
         int saveLayerCount = canvas.saveLayer(0, 0, getWidth(), getHeight(), paint, Canvas.ALL_SAVE_FLAG);
 
         Bitmap mMaskBitmap = getMaskBitmap(radius);
+
+        paint.setFilterBitmap(true);
         canvas.drawBitmap(mMaskBitmap, 0, 0, paint);
 
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
         paint.setAntiAlias(true);
+
+
         Bitmap mWaveBitmap = getWaveBitmap(yHeight);
         canvas.drawBitmap(mWaveBitmap, 0, 0, paint);
 

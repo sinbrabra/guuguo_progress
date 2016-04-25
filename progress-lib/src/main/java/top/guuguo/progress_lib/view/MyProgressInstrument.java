@@ -21,7 +21,7 @@ import top.guuguo.progress_lib.util.DensityUtil;
 /**
  * Created by guodeqing on 16/4/5.
  */
-public class MyProgressHalfCircleBarView extends View {
+public class MyProgressInstrument extends View {
     private Drawable icon;
     /**
      * id:&:R.color.
@@ -33,11 +33,10 @@ public class MyProgressHalfCircleBarView extends View {
     private int mProgressMax;
     private int mCenterTextColor;
     private int mFinishedColor;
-    private float mProgressWidth;
-    private int mUnfinishedColor;
     private int mBackgroundColor;
 
     private String mCenterText = "";
+
 
     private Bitmap mBgBitmap;
 
@@ -80,13 +79,6 @@ public class MyProgressHalfCircleBarView extends View {
         this.mFinishedColor = mFinishedColor;
     }
 
-    public int getmUnfinishedColor() {
-        return mUnfinishedColor;
-    }
-
-    public void setmUnfinishedColor(int mUnfinishedColor) {
-        this.mUnfinishedColor = mUnfinishedColor;
-    }
 
     public String getmCenterText() {
         return mCenterText;
@@ -96,18 +88,18 @@ public class MyProgressHalfCircleBarView extends View {
         this.mCenterText = mCenterText;
     }
 
-    public MyProgressHalfCircleBarView(Context context) {
+    public MyProgressInstrument(Context context) {
         this(context, null);
 
     }
 
-    public MyProgressHalfCircleBarView(Context context, AttributeSet attrs) {
+    public MyProgressInstrument(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MyProgressHalfCircleBarView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public MyProgressInstrument(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        final TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.MyProgressHalfCircleBarView, defStyleAttr, 0);
+        final TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.MyProgressInstrument, defStyleAttr, 0);
         initByAttributes(attributes);
         attributes.recycle();
         initPaint();
@@ -115,16 +107,14 @@ public class MyProgressHalfCircleBarView extends View {
     }
 
     protected void initByAttributes(TypedArray attributes) {
-        mProgress = attributes.getInteger(R.styleable.MyProgressHalfCircleBarView_half_progress, 0);
-        mProgressMax = attributes.getInteger(R.styleable.MyProgressHalfCircleBarView_half_progress_max, 100);
-        mCenterTextColor = attributes.getColor(R.styleable.MyProgressHalfCircleBarView_half_center_text_color, Color.BLACK);
-        if (attributes.getString(R.styleable.MyProgressHalfCircleBarView_half_center_text) != null)
-            mCenterText = attributes.getString(R.styleable.MyProgressHalfCircleBarView_half_center_text);
-        mFinishedColor = attributes.getColor(R.styleable.MyProgressHalfCircleBarView_half_finished_color, Color.BLUE);
-        mUnfinishedColor = attributes.getColor(R.styleable.MyProgressHalfCircleBarView_half_unfinished_color, Color.GRAY);
-        mBackgroundColor = attributes.getColor(R.styleable.MyProgressHalfCircleBarView_half_background_color, mUnfinishedColor);
-        mCenterTextSize = attributes.getDimension(R.styleable.MyProgressHalfCircleBarView_half_center_text_size, DensityUtil.dip2px(getContext(), 25));
-        mProgressWidth = attributes.getDimension(R.styleable.MyProgressHalfCircleBarView_half_width, DensityUtil.dip2px(getContext(), 15));
+        mProgress = attributes.getInteger(R.styleable.MyProgressInstrument_Instrument_progress, 0);
+        mProgressMax = attributes.getInteger(R.styleable.MyProgressInstrument_Instrument_progress_max, 100);
+        mCenterTextColor = attributes.getColor(R.styleable.MyProgressInstrument_Instrument_center_text_color, Color.BLACK);
+        if (attributes.getString(R.styleable.MyProgressInstrument_Instrument_center_text) != null)
+            mCenterText = attributes.getString(R.styleable.MyProgressInstrument_Instrument_center_text);
+        mFinishedColor = attributes.getColor(R.styleable.MyProgressInstrument_Instrument_finished_color, Color.BLUE);
+        mBackgroundColor = attributes.getColor(R.styleable.MyProgressInstrument_Instrument_background_color, Color.BLACK);
+        mCenterTextSize = attributes.getDimension(R.styleable.MyProgressInstrument_Instrument_center_text_size, DensityUtil.dip2px(getContext(), 25));
     }
 
     @Override
@@ -136,48 +126,43 @@ public class MyProgressHalfCircleBarView extends View {
         // 初始化paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.heart_rat_progress_bg);
+        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.progress_instrument_bg);
 
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.save();
-        mPaint.setStrokeWidth(mProgressWidth);
-
-        int saveLayerCount = canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaint, Canvas.ALL_SAVE_FLAG);
         mPaint.setFilterBitmap(true);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mBackgroundColor);
+
+        int saveLayerCount = canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaint, Canvas.ALL_SAVE_FLAG);
         canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_ATOP));
-
         canvas.drawBitmap(mBgBitmap, new Rect(0, 0, mBgBitmap.getWidth(), mBgBitmap.getHeight()), new Rect(0, 0, getWidth(), getHeight()), mPaint);
         mPaint.setXfermode(null);
-        mPaint.setStyle(Paint.Style.STROKE);
         canvas.restoreToCount(saveLayerCount);
-        //        mPaint.d
-        float margin = 2 / 14f;
-        float y = getHeight() * margin;
-        float x = getWidth() / 2 - getHeight() + y;
-        mPaint.setColor(mUnfinishedColor);
         mPaint.setAntiAlias(true);
         mPaint.setFilterBitmap(false);
-
-        canvas.drawArc(new RectF(x, y, x + 2 * getHeight() * (1 - margin), y + 2 * getHeight() * (1 - margin)), 180, 180, false, mPaint);
         mPaint.setColor(mFinishedColor);
-        mPaint.setStrokeWidth(mProgressWidth);
-        canvas.drawArc(new RectF(x, y, x + 2 * getHeight() * (1 - margin), y + 2 * getHeight() * (1 - margin)), 180, 180 * mProgress / mProgressMax, false, mPaint);
+        canvas.drawArc(new RectF(0, 0, getHeight(), getHeight()), 0, 200 * mProgress / mProgressMax, true, mPaint);
+        canvas.save();
+        canvas.rotate(200 * mProgress / mProgressMax,getWidth()/2,getHeight()/2);
+        mPaint.setColor(mBackgroundColor);
+        mPaint.setStrokeWidth(5);
+        canvas.drawLine(getWidth()/2,getHeight()/2,getWidth(),getHeight()/2,mPaint);
+        canvas.restore();
 
-        Rect textBounds = new Rect();
-        mPaint.reset();
-        mPaint.setColor(mCenterTextColor);
-        mPaint.setTextSize(mCenterTextSize);
-        mPaint.getTextBounds(mCenterText, 0, mCenterText.length(), textBounds);
-        mPaint.setTextAlign(Paint.Align.CENTER);
-        int textHeight = textBounds.bottom - textBounds.top;
-        canvas.drawText(mCenterText, getWidth() / 2, getHeight() - textHeight / 2, mPaint);
+
+        //        Rect textBounds = new Rect();
+//        mPaint.reset();
+//        mPaint.setColor(mFinishedColor);
+//        mPaint.setTextSize(50);
+//        mPaint.getTextBounds("你好吗", 0, "你好吗".length(), textBounds);
+//        mPaint.setTextAlign(Paint.Align.CENTER);
+//        int textHeight = textBounds.bottom - textBounds.top;
+//        canvas.drawText("你好吗", getWidth() / 2, getHeight() - textHeight / 2, mPaint);
     }
 
 
