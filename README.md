@@ -1,4 +1,8 @@
 # guuguo\_progress
+---- 使用方式:
+**compile 'top.guuguo.guuguo\_progress:progress-lib:unspecified'**  
+
+
 ## first progress
 ![][image-1] 
 ### 第一个水波纹控件

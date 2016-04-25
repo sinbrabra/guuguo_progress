@@ -22,7 +22,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile project(':progress-lib')
+//    compile project(':progress-lib')
     compile 'com.android.support:appcompat-v7:23.2.1'
-
+    compile 'top.guuguo.guuguo_progress:progress-lib:unspecified'
 }

@@ -1,6 +1,13 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
+
+//接着，在apply plugin: ‘com.android.library’后面，加入如下代码：
+ext {
+    PUBLISH_GROUP_ID = 'top.guuugo.android'
+    PUBLISH_ARTIFACT_ID = 'guuguo-progress'
+    PUBLISH_VERSION = '0.1'
+}
 // 提交到仓库中的版本号
 android {
     compileSdkVersion 23
