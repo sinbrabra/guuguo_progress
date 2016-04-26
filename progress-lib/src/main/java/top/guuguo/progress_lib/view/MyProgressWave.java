@@ -14,6 +14,7 @@ import android.os.Message;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import top.guuguo.progress_lib.R;
@@ -39,6 +40,9 @@ public class MyProgressWave extends View {
     private int circleColor;
     private String prefixText = "";
     private String suffixText = "%";
+    private Bitmap mMaskBitmap;
+    private boolean changeHeight = true;
+    private Bitmap mWaveBitmap;
 
     public String getForceTitle() {
         return forceTitle;
@@ -61,6 +65,7 @@ public class MyProgressWave extends View {
     private final float default_text_size;
     private final boolean default_enable_center_text = false;
     private final float default_circle_width;
+    private double periodMultiple=15;
 
     private Paint paint = new Paint();
 
@@ -89,7 +94,7 @@ public class MyProgressWave extends View {
     protected void initByAttributes(TypedArray attributes) {
         finishedColor = attributes.getColor(R.styleable.MyProgressWave_wave_finished_color, default_finished_color);
         unfinishedColor = attributes.getColor(R.styleable.MyProgressWave_wave_unfinished_color, default_unfinished_color);
-        enableWave= attributes.getBoolean(R.styleable.MyProgressWave_wave_enable, true);
+        enableWave = attributes.getBoolean(R.styleable.MyProgressWave_wave_enable, true);
         circleColor = attributes.getColor(R.styleable.MyProgressWave_wave_circle_color, finishedColor);
         textColor = attributes.getColor(R.styleable.MyProgressWave_wave_text_color, default_text_color);
         textSize = attributes.getDimension(R.styleable.MyProgressWave_wave_text_size, default_text_size);
@@ -219,14 +224,14 @@ public class MyProgressWave extends View {
     }
 
     private float getLineHeight(int x, float h) {
-        if(enableWave)
-            return (float) (6 * Math.sin(x * 0.06 + offset) + getHeight() - h);
-        else{
-            return  getHeight()-h;
+        if (enableWave) return (float) (6 * Math.sin(x * (1/periodMultiple)) + getHeight() - h);
+        else {
+            return getHeight() - h;
         }
     }
 
     float offset = 0;
+    private static final String TAG = "MyProgressWave";
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -235,8 +240,7 @@ public class MyProgressWave extends View {
         float radius = getWidth() / 2f;
         //保存图层
         int saveLayerCount = canvas.saveLayer(0, 0, getWidth(), getHeight(), paint, Canvas.ALL_SAVE_FLAG);
-
-        Bitmap mMaskBitmap = getMaskBitmap(radius);
+        if (mMaskBitmap == null) mMaskBitmap = getMaskBitmap(radius);
 
         paint.setFilterBitmap(true);
         canvas.drawBitmap(mMaskBitmap, 0, 0, paint);
@@ -244,9 +248,20 @@ public class MyProgressWave extends View {
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
         paint.setAntiAlias(true);
 
+        if (changeHeight) {
+//            Log.d(TAG, "onDraw: new");
+            mWaveBitmap = getWaveBitmap(yHeight);
+            canvas.drawBitmap(mWaveBitmap, (float) (offset/(1/periodMultiple)), 0, paint);
+            changeHeight = false;
+        } else {
+//            Log.d(TAG, "onDraw: 2");
+            if (mWaveBitmap == null) {
+//                Log.d(TAG, "onDraw: new");
 
-        Bitmap mWaveBitmap = getWaveBitmap(yHeight);
-        canvas.drawBitmap(mWaveBitmap, 0, 0, paint);
+                mWaveBitmap = getWaveBitmap(yHeight);
+            }
+            canvas.drawBitmap(mWaveBitmap, (float) (offset/(1/periodMultiple)), 0, paint);
+        }
 
         paint.setXfermode(null);
         //恢复图层
@@ -261,7 +276,7 @@ public class MyProgressWave extends View {
                 canvas.drawCircle(getWidth() / 2, getHeight() / 2, radius - (circleWidth / 2), paint);
                 break;
             case STYLE_SQUARE:
-                canvas.drawRect(circleWidth / 2,circleWidth / 2,getWidth()-circleWidth / 2, getHeight()-circleWidth / 2, paint);
+                canvas.drawRect(circleWidth / 2, circleWidth / 2, getWidth() - circleWidth / 2, getHeight() - circleWidth / 2, paint);
                 break;
         }
         String text = getDrawText();
@@ -294,11 +309,14 @@ public class MyProgressWave extends View {
     }
 
     private Bitmap getWaveBitmap(float yHeight) {
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        int width = (int) (((int) (getWidth() / ((2 * Math.PI)/(1/periodMultiple))) + 2) * (2 * Math.PI/(1/periodMultiple)));
+        //宽度设置为
+        Log.d(TAG, "getWaveBitmap: w" + width);
+        Bitmap bitmap = Bitmap.createBitmap(width, getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint lpaint = new Paint();
         lpaint.setColor(getFinishedColor());
-        for (int i = 0; i <= getWidth(); i++) {
+        for (int i = 0; i <= width; i++) {
             canvas.drawLine(i, getLineHeight(i, yHeight), i, getHeight(), lpaint);
         }
         return bitmap;
@@ -321,9 +339,9 @@ public class MyProgressWave extends View {
             public void run() {
                 while (enableWave) {
                     try {
-                        Thread.sleep(16);
-                        offset += 0.1;
-                        if (offset >= 2 * Math.PI) offset -= 2 * Math.PI;
+                        Thread.sleep(20);
+                        offset -= 0.13;
+                        if (offset <= -2 * Math.PI) offset += 2 * Math.PI;
                         Message message = new Message();
                         message.what = 1;
                         mHandler.sendMessage(message);

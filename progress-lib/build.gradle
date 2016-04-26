@@ -6,7 +6,7 @@ apply plugin: 'com.jfrog.bintray'
 ext {
     PUBLISH_GROUP_ID = 'top.guuugo.android'
     PUBLISH_ARTIFACT_ID = 'guuguo-progress'
-    PUBLISH_VERSION = '0.1'
+    PUBLISH_VERSION = '0.02'
 }
 // 提交到仓库中的版本号
 android {

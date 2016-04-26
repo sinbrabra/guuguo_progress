@@ -126,7 +126,7 @@ public class MyProgressInstrument extends View {
         // 初始化paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.progress_instrument_bg);
+        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.progress_instrument_bg);
 
     }
 

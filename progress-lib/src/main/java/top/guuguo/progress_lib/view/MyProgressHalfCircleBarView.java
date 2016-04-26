@@ -136,7 +136,7 @@ public class MyProgressHalfCircleBarView extends View {
         // 初始化paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.heart_rat_progress_bg);
+        mBgBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.heart_rat_progress_bg);
 
     }
 
