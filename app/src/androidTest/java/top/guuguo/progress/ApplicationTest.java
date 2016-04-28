@@ -1,4 +1,4 @@
-package top.guuguo.guuguo_progress;
+package top.guuguo.progress;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

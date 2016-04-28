@@ -1,4 +1,4 @@
-package top.guuguo.guuguo_progress;
+package top.guuguo.progress;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

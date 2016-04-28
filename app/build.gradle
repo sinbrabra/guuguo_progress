@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "top.guuguo.guuguo_progress"
+        applicationId "top.guuguo.progress"
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1
@@ -24,5 +24,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(':progress-lib')
     compile 'com.android.support:appcompat-v7:23.2.1'
-//    compile 'top.guuguo.guuguo_progress:progress-lib:unspecified'
+//    compile 'top.guuguo.android:progress-lib:0.02'
 }

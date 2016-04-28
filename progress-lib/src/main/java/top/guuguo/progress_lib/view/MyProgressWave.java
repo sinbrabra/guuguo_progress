@@ -3,11 +3,13 @@ package top.guuguo.progress_lib.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
@@ -43,6 +45,14 @@ public class MyProgressWave extends View {
     private Bitmap mMaskBitmap;
     private boolean changeHeight = true;
     private Bitmap mWaveBitmap;
+    private float mWaveFrequency;
+    private float mWaveSwing;
+    private int mCustomMask;
+
+    /**
+     * 速度,相对于2pi而言,2pi为一个周期
+     */
+    private float mWaveSpeed;
 
     public String getForceTitle() {
         return forceTitle;
@@ -65,7 +75,6 @@ public class MyProgressWave extends View {
     private final float default_text_size;
     private final boolean default_enable_center_text = false;
     private final float default_circle_width;
-    private double periodMultiple=15;
 
     private Paint paint = new Paint();
 
@@ -101,6 +110,11 @@ public class MyProgressWave extends View {
         circleWidth = attributes.getDimension(R.styleable.MyProgressWave_wave_circle_width, default_circle_width);
         enableCenterText = attributes.getBoolean(R.styleable.MyProgressWave_wave_enable_center_text, default_enable_center_text);
         style = attributes.getInt(R.styleable.MyProgressWave_wave_style, STYLE_CIRCLE);
+        mWaveSwing = attributes.getFloat(R.styleable.MyProgressWave_wave_swing, 15);
+        mWaveSpeed = attributes.getFloat(R.styleable.MyProgressWave_wave_speed, 0.13f);
+        mWaveFrequency = attributes.getFloat(R.styleable.MyProgressWave_wave_frequency, 6);
+        mCustomMask = attributes.getResourceId(R.styleable.MyProgressWave_wave_mask, 0);
+
         setMax(attributes.getInt(R.styleable.MyProgressWave_wave_max, default_max));
         setProgress(attributes.getFloat(R.styleable.MyProgressWave_wave_progress, 0.0f));
 
@@ -210,7 +224,7 @@ public class MyProgressWave extends View {
     public String getDrawText() {
         if (forceTitle != null) return getForceTitle();
         else if (!enableCenterText) return null;
-        return getPrefixText() + getProgress() + getSuffixText();
+        return getPrefixText() +  getProgress() + getSuffixText();
     }
 
     public float getProgressPercentage() {
@@ -224,7 +238,8 @@ public class MyProgressWave extends View {
     }
 
     private float getLineHeight(int x, float h) {
-        if (enableWave) return (float) (6 * Math.sin(x * (1/periodMultiple)) + getHeight() - h);
+        if (enableWave)
+            return (float) (mWaveFrequency * Math.sin(x * (1 / mWaveSwing)) + getHeight() - h);
         else {
             return getHeight() - h;
         }
@@ -243,41 +258,39 @@ public class MyProgressWave extends View {
         if (mMaskBitmap == null) mMaskBitmap = getMaskBitmap(radius);
 
         paint.setFilterBitmap(true);
-        canvas.drawBitmap(mMaskBitmap, 0, 0, paint);
+        canvas.drawBitmap(mMaskBitmap, new Rect(0, 0, mMaskBitmap.getWidth(), mMaskBitmap.getHeight()), new Rect(0, 0, getWidth(), getHeight()), paint);
 
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
         paint.setAntiAlias(true);
 
         if (changeHeight) {
-//            Log.d(TAG, "onDraw: new");
             mWaveBitmap = getWaveBitmap(yHeight);
-            canvas.drawBitmap(mWaveBitmap, (float) (offset/(1/periodMultiple)), 0, paint);
+            canvas.drawBitmap(mWaveBitmap, (float) (offset / (1 / mWaveSwing)), 0, paint);
             changeHeight = false;
         } else {
-//            Log.d(TAG, "onDraw: 2");
             if (mWaveBitmap == null) {
-//                Log.d(TAG, "onDraw: new");
-
                 mWaveBitmap = getWaveBitmap(yHeight);
             }
-            canvas.drawBitmap(mWaveBitmap, (float) (offset/(1/periodMultiple)), 0, paint);
+            canvas.drawBitmap(mWaveBitmap, (float) (offset / (1 / mWaveSwing)), 0, paint);
         }
 
         paint.setXfermode(null);
         //恢复图层
         canvas.restoreToCount(saveLayerCount);
-        //画圈
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(circleWidth);
-        paint.setColor(circleColor);
-        switch (style) {
-            case STYLE_CIRCLE:
-                canvas.drawCircle(getWidth() / 2, getHeight() / 2, radius - (circleWidth / 2), paint);
-                break;
-            case STYLE_SQUARE:
-                canvas.drawRect(circleWidth / 2, circleWidth / 2, getWidth() - circleWidth / 2, getHeight() - circleWidth / 2, paint);
-                break;
+
+        if (circleWidth != 0) {        //画圈
+            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(circleWidth);
+            paint.setColor(circleColor);
+            switch (style) {
+                case STYLE_CIRCLE:
+                    canvas.drawCircle(getWidth() / 2, getHeight() / 2, radius - (circleWidth / 2), paint);
+                    break;
+                case STYLE_SQUARE:
+                    canvas.drawRect(circleWidth / 2, circleWidth / 2, getWidth() - circleWidth / 2, getHeight() - circleWidth / 2, paint);
+                    break;
+            }
         }
         String text = getDrawText();
         if (!TextUtils.isEmpty(text)) {
@@ -290,26 +303,42 @@ public class MyProgressWave extends View {
      * 绘制不同的图形Bitmap
      */
     private Bitmap getMaskBitmap(float radius) {
+        Bitmap bitmap;
+        if (mCustomMask != 0) {
+            //            bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
 
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Paint lpaint = new Paint();
-        lpaint.setAntiAlias(true);
-        lpaint.setStyle(Paint.Style.FILL);
-        lpaint.setColor(getUnfinishedColor());
-        switch (style) {
-            case STYLE_CIRCLE:
-                canvas.drawCircle(getWidth() / 2, getHeight() / 2, radius, lpaint);
-                break;
-            case STYLE_SQUARE:
-                canvas.drawRect(0, 0, getWidth(), getHeight(), lpaint);
-                break;
+            bitmap = BitmapFactory.decodeResource(getResources(), mCustomMask).copy(Bitmap.Config.ARGB_8888, true);
+            ;
+            Canvas canvas = new Canvas(bitmap);
+            Paint lpaint = new Paint();
+            //            canvas.drawBitmap(tempBitmap,0,0,lpaint);
+
+            lpaint.setStyle(Paint.Style.FILL);
+            lpaint.setColor(getUnfinishedColor());
+            lpaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
+            canvas.drawRect(0, 0, bitmap.getWidth(), bitmap.getHeight(), lpaint);
+
+        } else {
+            bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            Paint lpaint = new Paint();
+            lpaint.setAntiAlias(true);
+            lpaint.setStyle(Paint.Style.FILL);
+            lpaint.setColor(getUnfinishedColor());
+            switch (style) {
+                case STYLE_CIRCLE:
+                    canvas.drawCircle(getWidth() / 2, getHeight() / 2, radius, lpaint);
+                    break;
+                case STYLE_SQUARE:
+                    canvas.drawRect(0, 0, getWidth(), getHeight(), lpaint);
+                    break;
+            }
         }
         return bitmap;
     }
 
     private Bitmap getWaveBitmap(float yHeight) {
-        int width = (int) (((int) (getWidth() / ((2 * Math.PI)/(1/periodMultiple))) + 2) * (2 * Math.PI/(1/periodMultiple)));
+        int width = (int) (((int) (getWidth() / ((2 * Math.PI) / (1 / mWaveSwing))) + 2) * (2 * Math.PI / (1 / mWaveSwing)));
         //宽度设置为
         Log.d(TAG, "getWaveBitmap: w" + width);
         Bitmap bitmap = Bitmap.createBitmap(width, getHeight(), Bitmap.Config.ARGB_8888);
@@ -340,7 +369,7 @@ public class MyProgressWave extends View {
                 while (enableWave) {
                     try {
                         Thread.sleep(20);
-                        offset -= 0.13;
+                        offset -= mWaveSpeed;
                         if (offset <= -2 * Math.PI) offset += 2 * Math.PI;
                         Message message = new Message();
                         message.what = 1;
@@ -352,38 +381,4 @@ public class MyProgressWave extends View {
             }
         }).start();
     }
-
-    //    @Override
-    //    protected Parcelable onSaveInstanceState() {
-    //        final Bundle bundle = new Bundle();
-    //        bundle.putParcelable(INSTANCE_STATE, super.onSaveInstanceState());
-    //        bundle.putInt(INSTANCE_TEXT_COLOR, getTextColor());
-    //        bundle.putFloat(INSTANCE_TEXT_SIZE, getTextSize());
-    //        bundle.putInt(INSTANCE_FINISHED_STROKE_COLOR, getFinishedColor());
-    //        bundle.putInt(INSTANCE_UNFINISHED_STROKE_COLOR, getUnfinishedColor());
-    //        bundle.putInt(INSTANCE_MAX, getMax());
-    //        bundle.putFloat(INSTANCE_PROGRESS, getProgress());
-    //        bundle.putString(INSTANCE_SUFFIX, getSuffixText());
-    //        bundle.putString(INSTANCE_PREFIX, getPrefixText());
-    //        return bundle;
-    //    }
-    //
-    //    @Override
-    //    protected void onRestoreInstanceState(Parcelable state) {
-    //        if (state instanceof Bundle) {
-    //            final Bundle bundle = (Bundle) state;
-    //            textColor = bundle.getInt(INSTANCE_TEXT_COLOR);
-    //            textSize = bundle.getFloat(INSTANCE_TEXT_SIZE);
-    //            finishedColor = bundle.getInt(INSTANCE_FINISHED_STROKE_COLOR);
-    //            unfinishedColor = bundle.getInt(INSTANCE_UNFINISHED_STROKE_COLOR);
-    //            initPainters();
-    //            setMax(bundle.getInt(INSTANCE_MAX));
-    //            setProgress(bundle.getFloat(INSTANCE_PROGRESS));
-    //            prefixText = bundle.getString(INSTANCE_PREFIX);
-    //            suffixText = bundle.getString(INSTANCE_SUFFIX);
-    //            super.onRestoreInstanceState(bundle.getParcelable(INSTANCE_STATE));
-    //            return;
-    //        }
-    //        super.onRestoreInstanceState(state);
-    //    }
 }

@@ -12,6 +12,8 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -28,7 +30,7 @@ public class MyProgressInstrument extends View {
      */
     private Paint mPaint;
 
-    private int mProgress = 0;
+    private float mProgress = 0;
     private float mCenterTextSize;
     private int mProgressMax;
     private int mCenterTextColor;
@@ -36,7 +38,6 @@ public class MyProgressInstrument extends View {
     private int mBackgroundColor;
 
     private String mCenterText = "";
-
 
     private Bitmap mBgBitmap;
 
@@ -48,7 +49,7 @@ public class MyProgressInstrument extends View {
         this.mProgressMax = mProgressMax;
     }
 
-    public int getmProgress() {
+    public float getmProgress() {
         return mProgress;
     }
 
@@ -58,7 +59,7 @@ public class MyProgressInstrument extends View {
     }
 
     private void progressAnimation() {
-
+        invalidate();
     }
 
     int currentProgress;
@@ -77,8 +78,8 @@ public class MyProgressInstrument extends View {
 
     public void setmFinishedColor(int mFinishedColor) {
         this.mFinishedColor = mFinishedColor;
+        invalidate();
     }
-
 
     public String getmCenterText() {
         return mCenterText;
@@ -148,22 +149,51 @@ public class MyProgressInstrument extends View {
         mPaint.setColor(mFinishedColor);
         canvas.drawArc(new RectF(0, 0, getHeight(), getHeight()), 0, 200 * mProgress / mProgressMax, true, mPaint);
         canvas.save();
-        canvas.rotate(200 * mProgress / mProgressMax,getWidth()/2,getHeight()/2);
+        canvas.rotate(200 * mProgress / mProgressMax, getWidth() / 2, getHeight() / 2);
         mPaint.setColor(mBackgroundColor);
         mPaint.setStrokeWidth(5);
-        canvas.drawLine(getWidth()/2,getHeight()/2,getWidth(),getHeight()/2,mPaint);
+        canvas.drawLine(getWidth() / 2, getHeight() / 2, getWidth(), getHeight() / 2, mPaint);
         canvas.restore();
 
 
         //        Rect textBounds = new Rect();
-//        mPaint.reset();
-//        mPaint.setColor(mFinishedColor);
-//        mPaint.setTextSize(50);
-//        mPaint.getTextBounds("你好吗", 0, "你好吗".length(), textBounds);
-//        mPaint.setTextAlign(Paint.Align.CENTER);
-//        int textHeight = textBounds.bottom - textBounds.top;
-//        canvas.drawText("你好吗", getWidth() / 2, getHeight() - textHeight / 2, mPaint);
+        //        mPaint.reset();
+        //        mPaint.setColor(mFinishedColor);
+        //        mPaint.setTextSize(50);
+        //        mPaint.getTextBounds("你好吗", 0, "你好吗".length(), textBounds);
+        //        mPaint.setTextAlign(Paint.Align.CENTER);
+        //        int textHeight = textBounds.bottom - textBounds.top;
+        //        canvas.drawText("你好吗", getWidth() / 2, getHeight() - textHeight / 2, mPaint);
     }
 
+    private static final String INSTANCE_STATE = "saved_instance";
+    //        private static final String INSTANCE_TEXT_COLOR = "text_color";
+    //        private static final String INSTANCE_TEXT_SIZE = "text_size";
+    private static final String INSTANCE_FINISHED_STROKE_COLOR = "finished_stroke_color";
+    //        private static final String INSTANCE_UNFINISHED_STROKE_COLOR = "unfinished_stroke_color";
+    //        private static final String INSTANCE_MAX = "max";
+    private static final String INSTANCE_PROGRESS = "progress";
 
+    //        private static final String INSTANCE_SUFFIX = "suffix";
+    //        private static final String INSTANCE_PREFIX = "prefix";
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(INSTANCE_STATE, super.onSaveInstanceState());
+        bundle.putInt(INSTANCE_FINISHED_STROKE_COLOR, mFinishedColor);
+        bundle.putFloat(INSTANCE_PROGRESS, mProgress);
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof Bundle) {
+            final Bundle bundle = (Bundle) state;
+            mFinishedColor = bundle.getInt(INSTANCE_FINISHED_STROKE_COLOR);
+            mProgress = bundle.getFloat(INSTANCE_PROGRESS);
+            super.onRestoreInstanceState(bundle.getParcelable(INSTANCE_STATE));
+            return;
+        }
+        super.onRestoreInstanceState(state);
+    }
 }
