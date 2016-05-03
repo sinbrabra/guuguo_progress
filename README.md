@@ -1,6 +1,6 @@
 # guuguo\_progress
 ---- 使用方式:
-**compile 'top.guuguo.guuguo\_progress:progress-lib:unspecified'**  
+**compile compile 'top.guuguo.android:progress-lib:0.02'**  
 
 
 ## first progress
